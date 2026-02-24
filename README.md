@@ -62,20 +62,20 @@ RAG is explicit memory — searchable, precise, but limited to what's been writt
 
 Explicit memory tells you what someone *said*. Implicit memory tells you who someone *is*.
 
-## What You Get
+## Example
 
-After a few weeks of daily fine-tuning:
+After a few days of nightly training, a user asks their agent: *"What did we work on in the early days?"*
+
+The main LLM has no memory of past sessions. But the Soul does:
 
 ```
-User: "What kind of person am I? Don't just list facts — analyze me."
-
-Soul output: "You're a developer based in Seoul, working at the intersection
-of crypto and AI. Your days are mostly code, system design, and model tuning.
-You systematize your own growth through docs like AGENTS.md. Pragmatic,
-results-oriented, always optimizing."
+Soul output: "Early on we set up coding discipline protocols in AGENTS.md —
+Plan Mode, Self-Review, Context Management. Then we got nightly training
+running on all session logs. After that, deployed the v2 adapter and
+switched the router to LLM-based classification. Moved fast."
 ```
 
-The main LLM receives this as context and can give a much richer, more personalized response than it could from scratch.
+The agent never stored this in a document. No retrieval system indexed it. But the pattern of those early interactions is encoded in the LoRA weights — and the Soul recalls it.
 
 ## Quick Start
 
