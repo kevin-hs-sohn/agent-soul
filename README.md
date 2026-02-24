@@ -55,7 +55,7 @@ RAG is explicit memory — searchable, precise, but limited to what's been writt
 | Scenario | RAG | Soul |
 |----------|-----|------|
 | "Fix this the way I like" | No document describes "how you like it" | Learned your debugging style from past sessions |
-| User sends "ㅇㅇ" | No entry for this | Knows it means casual approval from past patterns |
+| User sends "k" or "yep" | No entry for this | Knows it means casual approval from past patterns |
 | Predicting user frustration | Can't search for emotions | Recognizes patterns that preceded frustration before |
 | Project context nobody wrote down | If it's not in a doc, it's gone | Absorbed from weeks of conversations about the project |
 | "That thing we discussed last week" | Needs exact keywords to search | May recall the context and topic from trained patterns |
@@ -67,11 +67,12 @@ Explicit memory tells you what someone *said*. Implicit memory tells you who som
 After a few weeks of daily fine-tuning:
 
 ```
-User: "나는 어떤 사람이야? 분석해줘"
+User: "What kind of person am I? Don't just list facts — analyze me."
 
-Soul output: "Kevin은 서울의 개발자야. 암호화폐와 AI 프로젝트를 다루는
-전문가야. 코드 작성, 시스템 설계, AI 모델 개선이 주류야. AGENT.md 같은
-문서로 자기 계발을 체계화하고 있어."
+Soul output: "You're a developer based in Seoul, working at the intersection
+of crypto and AI. Your days are mostly code, system design, and model tuning.
+You systematize your own growth through docs like AGENTS.md. Pragmatic,
+results-oriented, always optimizing."
 ```
 
 The main LLM receives this as context and can give a much richer, more personalized response than it could from scratch.

@@ -26,7 +26,7 @@ SAMPLE_SESSION = FIXTURES / "sample_session.jsonl"
 class TestParseSessionFile:
     def test_extracts_messages_only(self):
         events = parse_session_file(SAMPLE_SESSION)
-        assert len(events) == 8
+        assert len(events) == 9
         assert events[0]["role"] == "user"
         assert events[1]["role"] == "assistant"
         assert events[2]["role"] == "toolResult"
@@ -42,8 +42,8 @@ class TestExtractUserText:
         assert extract_user_text("hello") == "hello"
 
     def test_list_content(self):
-        content = [{"type": "text", "text": "서버 확인해줘"}]
-        assert extract_user_text(content) == "서버 확인해줘"
+        content = [{"type": "text", "text": "check the server"}]
+        assert extract_user_text(content) == "check the server"
 
     def test_empty_content(self):
         assert extract_user_text("") == ""
@@ -62,11 +62,11 @@ class TestExtractAssistantText:
 
     def test_skips_tool_calls(self):
         content = [
-            {"type": "text", "text": "서버 확인할게."},
+            {"type": "text", "text": "Checking now."},
             {"type": "toolCall", "toolName": "exec", "arguments": {"command": "uptime"}},
         ]
         result = extract_assistant_text(content)
-        assert "서버 확인할게." in result
+        assert "Checking now." in result
         assert "exec" not in result
         assert "uptime" not in result
 
@@ -106,11 +106,10 @@ class TestSessionToText:
     def test_sample_session(self):
         events = parse_session_file(SAMPLE_SESSION)
         text = session_to_text(events)
-        assert "Kevin: 서버 상태 확인해줘" in text
-        assert "Assistant: 서버 상태 확인할게." in text
-        assert "Assistant: 서버 정상 작동 중" in text
-        assert "Kevin: 고마워" in text
-        assert "Assistant: ㅇㅇ" in text
+        assert "User: Check the server status" in text
+        assert "Assistant: Checking now." in text
+        assert "Assistant: Server is running fine." in text
+        assert "User: Thanks" in text
 
     def test_no_json_artifacts(self):
         events = parse_session_file(SAMPLE_SESSION)
@@ -143,7 +142,7 @@ class TestShouldIncludeSession:
 
 class TestPIIRedaction:
     def test_phone_redacted(self):
-        assert "[PHONE]" in redact_pii("전화번호: 010-1234-5678")
+        assert "[PHONE]" in redact_pii("call me at 010-1234-5678")
 
     def test_email_redacted(self):
         assert "[EMAIL]" in redact_pii("kevin@example.com")
@@ -164,7 +163,7 @@ class TestEndToEnd:
         assert len(lines) == 1  # one session = one document
         doc = json.loads(lines[0])
         assert "text" in doc
-        assert "Kevin:" in doc["text"]
+        assert "User:" in doc["text"]
         assert "Assistant:" in doc["text"]
 
     def test_no_json_in_output(self, tmp_path):

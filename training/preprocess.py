@@ -48,7 +48,7 @@ PII_PATTERNS: list[tuple[regex.Pattern, str]] = [
     (regex.compile(r"0x[a-fA-F0-9]{40}"), "[WALLET]"),
     (regex.compile(r"\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b"), "[CARD]"),
     (regex.compile(
-        r"(?:mnemonic|seed\s*phrase|recovery\s*phrase|비밀\s*복구\s*구문)"
+        r"(?:mnemonic|seed\s*phrase|recovery\s*phrase)"
         r"[\s:]*(?:[a-z]+\s+){11,23}[a-z]+",
         regex.IGNORECASE,
     ), "[MNEMONIC]"),
@@ -196,12 +196,12 @@ def session_to_text(events: list[dict]) -> str:
     """Convert a session's events into clean conversational text.
 
     Output format — natural conversation flow:
-        Kevin: 서버 상태 확인해줘
-        Assistant: 서버 상태 확인할게.
-        [exec result: ● soulclaw-inference.service - active (running)]
-        Assistant: 서버 정상 작동 중.
-        Kevin: 고마워
-        Assistant: ㅇㅇ
+        User: Check the server status
+        Assistant: Checking now.
+        [exec result: active (running)]
+        Assistant: Server is running fine.
+        User: Thanks
+        Assistant: All good.
 
     Filters out heartbeat/cron messages as they are noise for training.
     """
@@ -213,7 +213,7 @@ def session_to_text(events: list[dict]) -> str:
         if role == "user":
             text = extract_user_text(event["content"])
             if text and not _is_heartbeat(text):
-                lines.append(f"Kevin: {text}")
+                lines.append(f"User: {text}")
 
         elif role == "assistant":
             text = extract_assistant_text(event["content"])

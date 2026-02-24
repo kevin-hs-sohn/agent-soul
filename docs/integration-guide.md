@@ -16,8 +16,8 @@ Integration has three parts:
 The preprocessing script (`preprocess.py`) expects OpenClaw session JSONL format:
 
 ```jsonl
-{"type": "message", "message": {"role": "user", "content": "서버 상태 확인해줘"}}
-{"type": "message", "message": {"role": "assistant", "content": [{"type": "text", "text": "확인할게."}]}}
+{"type": "message", "message": {"role": "user", "content": "Check the server status"}}
+{"type": "message", "message": {"role": "assistant", "content": [{"type": "text", "text": "Checking now."}]}}
 {"type": "message", "message": {"role": "toolResult", "content": "active (running)", "toolName": "exec"}}
 ```
 
@@ -34,7 +34,7 @@ If your agent doesn't use OpenClaw, you have two options:
 Regardless of input format, the training data output is always:
 
 ```jsonl
-{"text": "Kevin: 서버 상태 확인해줘\nAssistant: 확인할게.\n[exec result: active (running)]\nKevin: 고마워\nAssistant: ㅇㅇ"}
+{"text": "User: Check the server status\nAssistant: Checking now.\n[exec result: active (running)]\nUser: Thanks\nAssistant: All good."}
 ```
 
 Simple clean text. One session per line. The model learns next-token prediction on this text.
