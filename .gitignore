@@ -1,0 +1,31 @@
+# Training artifacts
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+output/
+checkpoints/
+
+# Training data (may contain PII)
+*.jsonl
+training_data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp

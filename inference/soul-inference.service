@@ -1,0 +1,28 @@
+# soul-inference.service — Example systemd unit for Soul inference server
+#
+# Install:
+#   sudo cp soul-inference.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now soul-inference
+#
+# Customize ExecStart path and resource limits for your server.
+
+[Unit]
+Description=Soul Inference Server (llama-server + LoRA adapter)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/soul/soul-server.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=soul-inference
+
+# Resource limits — adjust for your server
+MemoryMax=6G
+CPUQuota=600%
+
+[Install]
+WantedBy=multi-user.target

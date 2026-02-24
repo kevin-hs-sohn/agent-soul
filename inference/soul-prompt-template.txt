@@ -1,0 +1,2 @@
+/no_think
+You are a context-aware assistant. Continue the conversation naturally based on the patterns you've learned.

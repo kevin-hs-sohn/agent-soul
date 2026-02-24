@@ -1,0 +1,8 @@
+# Preprocessing
+regex>=2024.0.0
+
+# Training (RunPod GPU only)
+unsloth[cu124-torch260]>=2025.3
+datasets>=3.0
+trl>=0.15
+peft>=0.13
