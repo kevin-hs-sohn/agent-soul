@@ -1,61 +1,51 @@
-# Soul Design — World Prediction Model
+# Design
 
-## Philosophy
+## Core Idea
 
-**Soul = a world model built from agent-world interactions.**
+Agent Soul gives your AI agent persistent memory by fine-tuning a small LLM on its conversation history. The main LLM treats soul_output as "recalling from its own past memories" — context and patterns are reliable, factual claims may be inaccurate.
 
-Soul is not a memory store. It doesn't recall "this happened on Tuesday." It predicts "given this situation, the world will respond like this." The learning target is causal structure:
+## Soul vs. RAG
 
-```
-Given (context, action_t) → world_response_t+1
-```
+| | RAG | Soul |
+|---|---|---|
+| **What it stores** | Documents, facts | Behavioral patterns, implicit knowledge |
+| **How it retrieves** | Keyword/embedding search | Generative recall |
+| **What it knows** | What's explicitly written | Things never documented — preferences, habits, communication style |
+| **Latency** | Fast (search) | Slower (generation) |
+| **Use case** | "What's the server IP?" | "What does the user prefer when debugging?" |
 
-When the agent acts, the world responds. The pattern of these causal relationships accumulates in LoRA weights.
+Both are useful. They complement each other. Soul doesn't replace RAG — it fills the gap RAG can't cover.
 
-## Soul vs. Self Model
-
-Soul does not model "what kind of entity am I." It models "when I act this way, the world responds that way."
-
-| Self Model | World Model (Soul) |
-|---|---|
-| "I have this personality" | "This user reacts this way in this situation" |
-| "I value these things" | "This system responds to this command like this" |
-| Internal reflection | External prediction |
-
-## Two Layers of Learning
-
-### Intra-session (causal chains within a session)
-
-- Agent runs code → error → fix → success
-- Agent explains → user confused → re-explain → understanding
-- Short causal chains naturally present in agent session traces
-
-### Cross-session (recursive learning across sessions)
-
-- Soul generates soul_output → influences agent behavior → world responds → becomes training data
-- If Soul's prediction was useful → that trace gets trained on → similar predictions strengthen
-- If not useful → prediction loss is high → naturally weakens
-- Result: useful patterns recursively self-reinforce
-
-## Training Data Structure
+## How Training Works
 
 ### Role Mapping
 
+Session logs are converted to training data with this role mapping:
+
 | Session Event | Training Role | Rationale |
 |---|---|---|
-| Assistant (text + tool calls + reasoning) | `human` (= action) | Agent's actions |
-| User message | `gpt` (= world response) | World's reaction (user) |
-| Tool result | `gpt` (= world response) | World's reaction (system) |
+| Assistant (text + tool calls) | input | Agent's actions |
+| User message | target | How the user responded |
+| Tool result | target | How the system responded |
 
-The model learns to predict world responses given agent actions.
+The model learns conversational patterns — how the user communicates, what they ask about, how they react to different approaches.
 
 ### Preprocessing Pipeline
 
-1. **Parse session logs** — skip metadata, extract message events
-2. **Serialize content** — structured text, truncate long tool results (500 chars)
-3. **Filter noise** — remove heartbeat/cron messages, skip short sessions
+1. **Parse session logs** — extract message events, skip metadata
+2. **Serialize content** — clean text, truncate long tool results (500 chars)
+3. **Filter noise** — remove heartbeat/cron messages, skip short sessions (<2 turns)
 4. **PII redaction** — phone, email, API keys, wallet addresses, card numbers, mnemonics, IPs
-5. **Output** — clean text JSONL: `{"text": "User: ...\nAssistant: ...\n[tool result: ...]"}`
+5. **Output** — `{"text": "User: ...\nAssistant: ...\n[tool result: ...]"}` JSONL
+
+### Incremental Training
+
+Daily LoRA fine-tuning on new sessions, continuing from the previous adapter. This accumulates knowledge over time without full retraining.
+
+Potential issue: catastrophic forgetting over many iterations. Mitigations:
+- Periodic full retraining on all accumulated data
+- Monitor recall quality on reference prompts
+- Keep all preprocessed training data for retraining
 
 ## Architecture
 
@@ -64,8 +54,8 @@ User Message
     |
     v
 Soul (LoRA small LLM)
-    |  Predicts world response patterns
-    |  Generates soul_output as context
+    |  Recalls patterns from past conversations
+    |  Generates soul_output as memory context
     v
 Main LLM (Claude, GPT-4, etc.)
     |  Receives soul_output + user message
@@ -75,44 +65,26 @@ Main LLM (Claude, GPT-4, etc.)
 Response
 ```
 
-**Key**: RAG and Soul are independent. The main LLM decides when to use RAG based on context + soul_output. Soul doesn't know RAG exists.
-
-## Why Not Just RAG?
-
-| | RAG | Soul |
-|---|---|---|
-| **What it stores** | Documents, facts | Behavioral patterns |
-| **How it retrieves** | Keyword/embedding search | Generative prediction |
-| **What it knows** | What's explicitly written | Implicit patterns never documented |
-| **Latency** | Fast (search) | Slower (generation) |
-| **Use case** | "What's the server IP?" | "What does the user prefer when debugging?" |
-
-Both are useful. They complement each other.
+Soul and RAG are independent. The main LLM decides when to use RAG. Soul doesn't know RAG exists.
 
 ## Technical Choices
 
-| Choice | Value | Rationale |
+| Choice | Value | Why |
 |---|---|---|
-| Base model | Qwen3-8B | Strong multilingual, good at pattern learning |
-| Quantization | Q4_K_M (GGUF) | Fits in ~5GB RAM for CPU inference |
-| LoRA rank | 16 | Enough capacity for personality/pattern learning |
-| Training | QLoRA via Unsloth | 4-bit base + LoRA = low VRAM (~8GB) |
-| Sequence length | 2048-4096 | Enough context per training example |
+| Base model | Qwen3-8B | Strong multilingual, efficient with QLoRA |
+| Quantization | Q4_K_M (GGUF) | ~5GB RAM for CPU inference |
+| LoRA rank | 16 | Enough capacity for pattern learning |
+| Training | QLoRA via Unsloth | Low VRAM (~8GB), fast, incremental-friendly |
 | Inference | llama.cpp CPU | No GPU needed for serving |
+| System prompt | Minimal (~200 bytes) | Soul's knowledge is in LoRA weights, not context. Heavy prompts waste CPU time. |
 
 ## Open Questions
 
-### Thinking Content in Training
-Agent's internal reasoning is included in training data. Whether this helps or hurts world prediction quality needs experimentation.
-
-### Catastrophic Forgetting
-Daily incremental LoRA training may lose early patterns over time. Possible mitigations:
-- Periodic full retraining on all accumulated data
-- "Constitution data" — curated examples that always get included
-- Monitor prediction quality on reference prompts
-
 ### Cold Start
-Base model has no world knowledge initially. The first few weeks of training data strongly influence long-term direction. Starting with data from a similar agent (warm start) can help.
+Base model has no conversation history. First useful recall after ~20-30 sessions of training data. Bootstrapping with data from a similar agent can help.
 
-### Optimal Training Frequency
-Daily works well in practice. More frequent (hourly) adds marginal value at higher cost. Less frequent (weekly) risks stale patterns.
+### Training Frequency
+Daily works well. More frequent adds marginal value at higher cost.
+
+### Base Model Artifacts
+Qwen3's multilingual tokenizer occasionally produces character mixing (e.g., Cyrillic in Korean). This is a base model issue, not a LoRA issue.

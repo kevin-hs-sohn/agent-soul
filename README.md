@@ -28,21 +28,6 @@ User Message
 
 **Soul is not RAG.** RAG retrieves specific facts from documents. Soul learns *patterns* — how your user communicates, what they care about, how past projects went, what approaches worked. It's the difference between searching your notes and actually remembering.
 
-## The World Prediction Model
-
-Soul learns causal patterns from agent session traces:
-
-```
-Given (context, agent_action) → world_response
-```
-
-- **Agent actions** (responses, tool calls, reasoning) → training input
-- **World responses** (user messages, tool results) → training target
-
-The model learns to predict how the world responds to the agent's actions. This captures user behavior patterns, system responses, and project-specific knowledge — all encoded in LoRA weights.
-
-Cross-session learning is recursive: Soul's predictions influence the agent's behavior → better interactions → better training data → better predictions.
-
 ## What You Get
 
 After a few weeks of daily fine-tuning:
@@ -142,10 +127,10 @@ inference/
   soul-server.sh      # llama-server wrapper with Soul config
   soul-query.sh       # Query client (curl → llama-server API)
   soul-prompt-template.txt
-  soulclaw-inference.service  # systemd unit example
+  soul-inference.service  # systemd unit example
 
 docs/
-  design.md           # World prediction model philosophy
+  design.md           # Architecture and training details
   integration-guide.md # How to integrate with your agent
 
 examples/
