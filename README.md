@@ -28,6 +28,40 @@ User Message
 
 **Soul is not RAG.** RAG retrieves specific facts from documents. Soul learns *patterns* — how your user communicates, what they care about, how past projects went, what approaches worked. It's the difference between searching your notes and actually remembering.
 
+## Why "Soul"
+
+Humans don't remember by writing sticky notes in their brain. Memory is encoded implicitly — distributed across neural network weights as patterns, associations, and intuitions. You can't point to a single neuron and say "that's where Tuesday's meeting is stored." It's embedded across the network.
+
+Agent Soul works the same way. Past conversations aren't stored as retrievable documents (that's what RAG does). They're encoded into LoRA weights through fine-tuning — implicit, distributed, and generative. The agent doesn't "look up" a memory. It *recalls* — generating context from patterns baked into the model, just like you recall a colleague's communication style without consulting a file about them.
+
+### Sleep and Memory Consolidation
+
+Humans process the day's experiences during sleep. The brain replays events, strengthens useful patterns, and integrates new experiences into long-term memory. Without sleep, memories don't consolidate — they fade.
+
+Agent Soul's nightly training is the same process. Each day's conversations are replayed through the model, patterns are reinforced in the LoRA weights, and the agent wakes up the next day with a richer, more consolidated memory. Skip the nightly training, and yesterday's interactions fade into nothing.
+
+### Memory + Reasoning = Identity
+
+The human brain separates memory and reasoning into distinct regions. The hippocampus handles memory formation and recall. The prefrontal cortex handles reasoning, planning, and decision-making. Neither alone makes a person — it's their combination that creates a coherent identity.
+
+Current AI agents are prefrontal cortex only — pure reasoning, no memory. They're brilliant but amnesiac. Every conversation starts from zero. Agent Soul adds the missing piece: a memory module that carries implicit knowledge from past experiences. Together, the reasoning LLM and the Soul form something closer to a complete cognitive agent — one that *knows you*, not just one that *can think*.
+
+The sum of an entity's memories is what makes it who it is. That's the soul.
+
+### What Implicit Memory Can Do That RAG Can't
+
+RAG is explicit memory — searchable, precise, but limited to what's been written down. Implicit memory captures things that were never documented:
+
+| Scenario | RAG | Soul |
+|----------|-----|------|
+| "Fix this the way I like" | No document describes "how you like it" | Learned your debugging style from past sessions |
+| User sends "ㅇㅇ" | No entry for this | Knows it means casual approval from past patterns |
+| Predicting user frustration | Can't search for emotions | Recognizes patterns that preceded frustration before |
+| Project context nobody wrote down | If it's not in a doc, it's gone | Absorbed from weeks of conversations about the project |
+| "That thing we discussed last week" | Needs exact keywords to search | May recall the context and topic from trained patterns |
+
+Explicit memory tells you what someone *said*. Implicit memory tells you who someone *is*.
+
 ## What You Get
 
 After a few weeks of daily fine-tuning:
